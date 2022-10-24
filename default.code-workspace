@@ -1,0 +1,48 @@
+{
+	"folders": [
+		{
+			"name": "Ads",
+			"path": "services/src/adservice"
+		},
+		{
+			"name": "Cart",
+			"path": "services/src/cartservice"
+		},
+		{
+			"name": "Checkout",
+			"path": "services/src/checkoutservice"
+		},		
+		{
+			"name": "Currency",
+			"path": "services/src/currencyservice"
+		},
+		{
+			"name": "Email",
+			"path": "services/src/emailservice"
+		},
+		{
+			"name": "Frontend",
+			"path": "services/src/frontend"
+		},
+		{
+			"name": "Payment",
+			"path": "services/src/paymentservice"
+		},
+		{
+			"name": "ProductCatalog",
+			"path": "services/src/productcatalogservice"
+		},
+		{
+			"name": "Recommendation",
+			"path": "services/src/recommendationservice"
+		},
+		{
+			"name": "Shipping",
+			"path": "services/src/shippingservice"
+		},
+        {
+            "name": "All",
+            "path": "."
+        }
+	]
+}

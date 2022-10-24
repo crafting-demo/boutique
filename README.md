@@ -90,12 +90,22 @@ EOF
 
 ### Snapshots
 
-Using the `.sandbox/snapshot/base.sh` to install software in an empty workspace and create a
+Use `.sandbox/snapshot/base.sh` to install software in an empty workspace and create a
 base snapshot from there:
 
 ```sh
 sudo .sandbox/snapshot/base.sh
 cs snapshot create shared/base-boutique-r1
+```
+
+Use `.sandbox/snapshot/home.sh` to install software in an empty workspace and create a
+home snapshot from there:
+
+Before taking the snapshot, also install VSCode extensions.
+
+```sh
+.sandbox/snapshot/home.sh
+cs snapshot create --home shared/home-boutique-r1
 ```
 
 ### App

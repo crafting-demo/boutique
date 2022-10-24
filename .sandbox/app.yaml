@@ -26,6 +26,7 @@ workspaces:
   - name: openjdk
     version: ~14
   base_snapshot: shared/base-boutique-r1
+  home_snapshot: shared/home-boutique-r1
   env:
   - GOOGLE_APPLICATION_CREDENTIALS=/run/sandbox/fs/secrets/shared/shared/gcp-account.json
   - KUBECONFIG=/run/sandbox/fs/secrets/shared/shared/kubeconfig-demo1.yaml
