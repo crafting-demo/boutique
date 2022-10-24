@@ -1,0 +1,4 @@
+daemons:
+  lb:
+    run:
+      cmd: .sandbox/frontend.sh
