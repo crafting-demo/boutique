@@ -3,6 +3,12 @@
 . "${BASH_SOURCE[0]%/*}/functions.sh"
 
 while true; do
-    kubectl -n "$K8S_NS" port-forward --address 0.0.0.0 svc/frontend 8000:80
-    sleep 1
+    IP=$(kubectl -n $APP_NS get svc frontend-external -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    if [[ -z "$IP" ]]; then
+        echo "External load balancer IP unavailable ..."
+        sleep 1
+        continue
+    fi
+    echo "External load balancer IP: $IP"
+    socat TCP-LISTEN:8000,fork TCP-CONNECT:$IP:80
 done
