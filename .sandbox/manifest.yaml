@@ -2,3 +2,10 @@ daemons:
   lb:
     run:
       cmd: .sandbox/frontend.sh
+
+  frontend:
+    run:
+      dir: services/src/frontend
+      cmd: go run ./
+      env:
+      - PORT=8080

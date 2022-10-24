@@ -31,6 +31,19 @@ workspaces:
   - GOOGLE_APPLICATION_CREDENTIALS=/run/sandbox/fs/secrets/shared/shared/gcp-account.json
   - KUBECONFIG=/run/sandbox/fs/secrets/shared/shared/kubeconfig-demo1.yaml
   - APP_NS=${SANDBOX_APP}-${SANDBOX_ID}
+  - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice.${APP_NS}:3550
+  - CURRENCY_SERVICE_ADDR=currencyservice.${APP_NS}:7000
+  - CART_SERVICE_ADDR=cartservice.${APP_NS}:7070
+  - RECOMMENDATION_SERVICE_ADDR=recommendationservice.${APP_NS}:8080
+  - SHIPPING_SERVICE_ADDR=shippingservice.${APP_NS}:50051
+  - CHECKOUT_SERVICE_ADDR=checkoutservice.${APP_NS}:5050
+  - PAYMENT_SERVICE_ADDR=paymentservice.${APP_NS}:50051
+  - EMAIL_SERVICE_ADDR=emailservice.${APP_NS}:5000
+  - AD_SERVICE_ADDR=adservice.${APP_NS}:9555
+  - REDIS_ADDR=redis-cart.${APP_NS}:6379
+  - DISABLE_TRACING=1
+  - DISABLE_PROFILER=1
+  - DISABLE_STATS=1
   probes:
     readiness:
     - name: frontend
