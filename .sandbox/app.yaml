@@ -51,6 +51,22 @@ resources:
         run:
           dir: boutique
           cmd: .sandbox/deploy.sh
+    on_suspend:
+      max_retries: 1
+      timeout: 300s
+      use_workspace:
+        name: app
+        run:
+          dir: boutique
+          cmd: .sandbox/scale.sh 0
+    on_resume:
+      max_retries: 3
+      timeout: 300s
+      use_workspace:
+        name: app
+        run:
+          dir: boutique
+          cmd: .sandbox/scale.sh 1
     on_delete:
       max_retries: 3
       timeout: 300s
