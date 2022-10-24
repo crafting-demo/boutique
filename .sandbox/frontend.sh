@@ -10,5 +10,5 @@ while true; do
         continue
     fi
     echo "External load balancer IP: $IP"
-    socat TCP-LISTEN:8000,fork TCP-CONNECT:$IP:80
+    socat TCP-LISTEN:8000,fork,reuseaddr TCP-CONNECT:$IP:80
 done
