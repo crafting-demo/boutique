@@ -49,6 +49,13 @@
 		"version": "0.2.0",
 		"configurations": [
 			{
+				"name": "Checkout Debug",
+				"type": "go",
+				"request": "launch",
+				"mode": "debug",
+				"program": "${workspaceFolder:Checkout}",
+			},
+			{
 				"name": "Frontend Debug",
 				"type": "go",
 				"request": "launch",
