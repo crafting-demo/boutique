@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. "${BASH_SOURCE[0]%/*}/functions.sh"
-
 while true; do
     IP=$(kubectl -n $APP_NS get svc frontend-external -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
     if [[ -z "$IP" ]]; then

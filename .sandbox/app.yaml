@@ -30,7 +30,7 @@ workspaces:
   env:
   - GOOGLE_APPLICATION_CREDENTIALS=/run/sandbox/fs/secrets/shared/shared/gcp-account.json
   - KUBECONFIG=/run/sandbox/fs/secrets/shared/shared/kubeconfig-demo1.yaml
-  - APP_NS=${SANDBOX_APP}-${SANDBOX_ID}
+  - APP_NS=${SANDBOX_APP}-${SANDBOX_NAME}-${SANDBOX_ID}
   - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice.${APP_NS}:3550
   - CURRENCY_SERVICE_ADDR=currencyservice.${APP_NS}:7000
   - CART_SERVICE_ADDR=cartservice.${APP_NS}:7070
@@ -54,7 +54,7 @@ resources:
 - name: kubernetes
   brief: The deployment in the Kubernetes cluster
   details: |
-    The deployment is in namespace `{{data.namespace}}`.
+    The deployment is in namespace `{{state.namespace}}`.
   handlers:
     on_create:
       max_retries: 3

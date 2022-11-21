@@ -1,17 +1,11 @@
 #!/bin/bash
 
-. "${BASH_SOURCE[0]%/*}/functions.sh"
-
 # Ignore the error in case namespace exists.
-kubectl create ns "$K8S_NS" >&2 || true
-
-# Remove loadgenerator.
-yaml2json < "$K8S_MANIFEST_FILE" | \
-    jq -cMr '.|select(.metadata.name != "loadgenerator")' | \
-    kubectl -n "$K8S_NS" apply -f - >&2
+kubectl create ns "$APP_NS" >&2 || true
+kubectl -n "$APP_NS" apply -f release/kubernetes.yaml >&2
 
 cat <<EOF
 {
-    "namespace": "$K8S_NS"
+    "namespace": "$APP_NS"
 }
 EOF
