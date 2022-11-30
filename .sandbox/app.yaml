@@ -1,5 +1,9 @@
 # Create App using:
 #  cs app create shared/boutique app.yaml
+env:
+- GOOGLE_APPLICATION_CREDENTIALS=/run/sandbox/fs/secrets/shared/shared/gcp-account.json
+- KUBECONFIG=/run/sandbox/fs/secrets/shared/shared/kubeconfig-demo1.yaml
+- APP_NS=${SANDBOX_APP}-${SANDBOX_NAME}-${SANDBOX_ID}
 endpoints:
 - name: shop
   http:
@@ -28,9 +32,6 @@ workspaces:
   base_snapshot: shared/base-boutique-r1
   home_snapshot: shared/home-boutique-r1
   env:
-  - GOOGLE_APPLICATION_CREDENTIALS=/run/sandbox/fs/secrets/shared/shared/gcp-account.json
-  - KUBECONFIG=/run/sandbox/fs/secrets/shared/shared/kubeconfig-demo1.yaml
-  - APP_NS=${SANDBOX_APP}-${SANDBOX_NAME}-${SANDBOX_ID}
   - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice.${APP_NS}:3550
   - CURRENCY_SERVICE_ADDR=currencyservice.${APP_NS}:7000
   - CART_SERVICE_ADDR=cartservice.${APP_NS}:7070
@@ -53,39 +54,31 @@ workspaces:
 resources:
 - name: kubernetes
   brief: The deployment in the Kubernetes cluster
-  details: |
-    The deployment is in namespace `{{state.namespace}}`.
   handlers:
     on_create:
-      max_retries: 3
-      timeout: 300s
-      save_state: true
       use_workspace:
         name: app
         run:
           dir: boutique
-          cmd: .sandbox/deploy.sh
+          cmd: |
+            # Create the namespace if not exists.
+            kubectl create ns "$APP_NS" || true
+            kubectl -n "$APP_NS" apply -f release/kubernetes.yaml
     on_suspend:
-      max_retries: 1
-      timeout: 300s
       use_workspace:
         name: app
         run:
           dir: boutique
-          cmd: .sandbox/scale.sh 0
+          cmd: kubectl -n "$APP_NS" scale --replicas=0 --all deploy
     on_resume:
-      max_retries: 3
-      timeout: 300s
       use_workspace:
         name: app
         run:
           dir: boutique
-          cmd: .sandbox/scale.sh 1
+          cmd: kubectl -n "$APP_NS" scale --replicas=1 --all deploy
     on_delete:
-      max_retries: 3
-      timeout: 300s
       use_workspace:
         name: app
         run:
           dir: boutique
-          cmd: .sandbox/undeploy.sh
+          cmd: kubectl delete ns "$APP_NS"
