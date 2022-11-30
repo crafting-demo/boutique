@@ -11,11 +11,17 @@ endpoints:
     - path_prefix: /
       backend:
         target: app
-        port: frontend
+        port: lb
 workspaces:
 - name: app
   ports:
+  - name: checkout
+    port: 5050
+    protocol: HTTP/TCP
   - name: frontend
+    port: 8080
+    protocol: HTTP/TCP
+  - name: lb
     port: 8000
     protocol: HTTP/TCP
   checkouts:
