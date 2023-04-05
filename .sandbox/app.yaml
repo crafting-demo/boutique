@@ -50,7 +50,6 @@ workspaces:
   - EMAIL_SERVICE_ADDR=emailservice.${APP_NS}:5000
   - AD_SERVICE_ADDR=adservice.${APP_NS}:9555
   - REDIS_ADDR=redis-cart.${APP_NS}:6379
-  - DISABLE_TRACING=1
   - DISABLE_PROFILER=1
   - DISABLE_STATS=1
   probes:
