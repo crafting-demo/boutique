@@ -57,7 +57,7 @@ spec:
           value: "1"
         resources:
           requests:
-            cpu: 100m
+            cpu: 10m
             memory: 64Mi
           limits:
             cpu: 200m
@@ -124,7 +124,7 @@ spec:
             value: "cartservice:7070"
           resources:
             requests:
-              cpu: 100m
+              cpu: 10m
               memory: 64Mi
             limits:
               cpu: 200m
@@ -184,8 +184,8 @@ spec:
           value: "1"
         resources:
           requests:
-            cpu: 100m
-            memory: 220Mi
+            cpu: 10m
+            memory: 64Mi
           limits:
             cpu: 200m
             memory: 450Mi
@@ -263,7 +263,7 @@ spec:
           #   value: "true"
           resources:
             requests:
-              cpu: 100m
+              cpu: 10m
               memory: 64Mi
             limits:
               cpu: 200m
@@ -335,7 +335,7 @@ spec:
           value: "1"
         resources:
           requests:
-            cpu: 100m
+            cpu: 10m
             memory: 64Mi
           limits:
             cpu: 200m
@@ -393,7 +393,7 @@ spec:
           value: "1"
         resources:
           requests:
-            cpu: 100m
+            cpu: 10m
             memory: 64Mi
           limits:
             cpu: 200m
@@ -449,7 +449,7 @@ spec:
           value: "redis-cart:6379"
         resources:
           requests:
-            cpu: 200m
+            cpu: 10m
             memory: 64Mi
           limits:
             cpu: 300m
@@ -508,7 +508,7 @@ spec:
           value: "1"
         resources:
           requests:
-            cpu: 100m
+            cpu: 10m
             memory: 64Mi
           limits:
             cpu: 200m
@@ -565,7 +565,7 @@ spec:
           value: "1"
         resources:
           requests:
-            cpu: 100m
+            cpu: 10m
             memory: 64Mi
           limits:
             cpu: 200m
@@ -622,8 +622,8 @@ spec:
             memory: 256Mi
             cpu: 125m
           requests:
-            cpu: 70m
-            memory: 200Mi
+            cpu: 10m
+            memory: 64Mi
       volumes:
       - name: redis-data
         emptyDir: {}
@@ -678,8 +678,8 @@ spec:
           value: "9555"
         resources:
           requests:
-            cpu: 200m
-            memory: 180Mi
+            cpu: 10m
+            memory: 64Mi
           limits:
             cpu: 300m
             memory: 300Mi
