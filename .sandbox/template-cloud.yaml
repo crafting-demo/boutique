@@ -1,0 +1,109 @@
+# The Template for creating the boutique dev sandbox for demo purpose.
+# This template assume a Kubernetes cluster has been connected to the Crafting system
+# and the sandbox will automate per-namespace deployment in the cluster.
+# Create the template using:
+#  cs template create boutique template-cloud.yaml
+#
+# This template will use cloud provider to access the Kubernetes cluster, so the cloud access
+# must be configured before using this template.
+# See https://docs.sandboxes.cloud/docs/cloud-resources-setup for more details.
+#
+# To access the Kubernetes cluster without cloud provider, please refer to template.yaml.
+env:
+- GOOGLE_APPLICATION_CREDENTIALS=/run/sandbox/fs/secrets/shared/gcp-account.json
+- CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$GOOGLE_APPLICATION_CREDENTIALS
+- AWS_CONFIG_FILE=/run/sandbox/fs/secrets/shared/aws-config
+- KUBECONFIG=/run/sandbox/fs/secrets/shared/kubeconfig.yaml
+- KUBERNETES_CLUSTER=demo
+- APP_NS=${SANDBOX_APP}-${SANDBOX_NAME}-${SANDBOX_ID}
+endpoints:
+- name: shop
+  http:
+    routes:
+    - path_prefix: /
+      backend:
+        target: app
+        port: lb
+workspaces:
+- name: app
+  ports:
+  - name: checkout
+    port: 5050
+    protocol: HTTP/TCP
+  - name: frontend
+    port: 8080
+    protocol: HTTP/TCP
+  - name: lb
+    port: 8000
+    protocol: HTTP/TCP
+  checkouts:
+  - path: boutique
+    repo:
+      git: https://github.com/crafting-demo/boutique
+    manifest:
+      overlays:
+      - inline:
+          daemons:
+            forward:
+              # Forward from the sandbox endpoint (shop) to the frontend service
+              # in the cluster, so the deployment can be visited from the
+              # sandbox endpoint.
+              run:
+                cmd: cs k8s forward -I ${KUBERNETES_CLUSTER} 8000:frontend.${APP_NS}:80
+  packages:
+  - name: golang
+    version: ~1.19
+  - name: nodejs
+    version: ~16
+  - name: openjdk
+    version: ~14
+  base_snapshot: oci://us-docker.pkg.dev/crafting-dev/sandbox/shared/workspace:latest
+  env:
+  - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice.${APP_NS}:3550
+  - CURRENCY_SERVICE_ADDR=currencyservice.${APP_NS}:7000
+  - CART_SERVICE_ADDR=cartservice.${APP_NS}:7070
+  - RECOMMENDATION_SERVICE_ADDR=recommendationservice.${APP_NS}:8080
+  - SHIPPING_SERVICE_ADDR=shippingservice.${APP_NS}:50051
+  - CHECKOUT_SERVICE_ADDR=checkoutservice.${APP_NS}:5050
+  - PAYMENT_SERVICE_ADDR=paymentservice.${APP_NS}:50051
+  - EMAIL_SERVICE_ADDR=emailservice.${APP_NS}:5000
+  - AD_SERVICE_ADDR=adservice.${APP_NS}:9555
+  - REDIS_ADDR=redis-cart.${APP_NS}:6379
+  - DISABLE_PROFILER=1
+  probes:
+    readiness:
+    - name: frontend
+      http_get:
+        port: 8000
+        path: /
+resources:
+- name: kubernetes
+  brief: The deployment in the Kubernetes cluster
+  handlers:
+    on_create:
+      use_workspace:
+        name: app
+        run:
+          dir: boutique
+          cmd: |
+            # Create the namespace if not exists.
+            kubectl create ns "$APP_NS" || true
+            kubectl -n "$APP_NS" apply -f release/kubernetes.yaml
+    on_suspend:
+      use_workspace:
+        name: app
+        run:
+          dir: boutique
+          cmd: kubectl -n "$APP_NS" scale --replicas=0 --all deploy
+    on_resume:
+      use_workspace:
+        name: app
+        run:
+          dir: boutique
+          cmd: kubectl -n "$APP_NS" scale --replicas=1 --all deploy
+    on_delete:
+      use_workspace:
+        name: app
+        run:
+          dir: boutique
+          cmd: kubectl delete ns "$APP_NS"

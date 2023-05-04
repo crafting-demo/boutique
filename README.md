@@ -28,21 +28,49 @@ with a live deployment in the cluster.
 
 ## Setup
 
-### Prerequisites
+### Connect a Kubernetes Cluster
 
-- A Kubernetes cluster (either GKE or EKS);
-- Config/Credentials in Sandbox secrets for accessing the cluster, and this can be done
-  using either of the two options:
-  - Setup Identity federation in the target cloud to trust sandbox system as an OIDC
-    provider, no actual credentials need to be saved in secrets;
-  - Generate credentials from the target cloud and save as secrets.
-
-Please refer to the [doc](https://docs.sandboxes.cloud/docs/access-cloud-provider-from-sandbox) for the details.
-
-### App
-
-Create an App using `.sandbox/app.yaml`:
+Follow the instruction on the Web Console to connect a Kubernetes cluster, e.g.
 
 ```sh
-cs app create shared/boutique .sandbox/app.yaml
+cs infra connect kubernetes demo
 ```
+
+### Create a Template
+
+The [sample template](.sandbox/template.yaml) can be used (modify the value of `KUBERNETES_CLUSTER` to
+be the name used in the `cs infra connect kubernetes` command above):
+
+```sh
+cs template create boutique .sandbox/template.yaml
+```
+
+### Create a Sandbox
+
+The created Template can be used to create a sandbox and when the new sandbox launches, a new deployment
+will be created in a dedicated namespace (named as `APP_NS` defined in the template).
+And it can be directly accessed using the `shop` endpoint.
+
+### Further Improvement
+
+When launching Web IDE (or connect via VSCode), there's no extension installed.
+The IDE may prompt for installing the [recommended extensions](.vscode/extensions.json), and after installing
+the Golang extension, additional Go tools must also be installed.
+
+To make the sandbox ready for use right after launch, the extensions and additional Go tools can be baked in
+a home snapshot. From a running sandbox:
+
+```sh
+.sandbox/snapshot/home.sh
+cs snapshot create --home home-boutique-v1
+```
+
+Then update the template by adding:
+
+```yaml
+home_snapshot: home-boutique-v1
+```
+
+to the workspace.
+
+Create another sandbox from the updated sandbox, and launch Web IDE. Now everything should be ready.

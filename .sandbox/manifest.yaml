@@ -1,7 +1,0 @@
-daemons:
-  forward:
-    run:
-      cmd: |
-        while true; do
-          kubectl -n $APP_NS port-forward --address 0.0.0.0 deploy/frontend 8000:8080
-        done
