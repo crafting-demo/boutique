@@ -275,6 +275,7 @@ func (fe *frontendServer) viewCartHandler(w http.ResponseWriter, r *http.Request
 	}
 	items := make([]cartItemView, len(cart))
 	totalPrice := pb.Money{CurrencyCode: currentCurrency(r)}
+	totalPriceUSD := pb.Money{CurrencyCode: "USD"}
 	for i, item := range cart {
 		p, err := fe.getProduct(r.Context(), item.GetProductId())
 		if err != nil {
@@ -293,7 +294,18 @@ func (fe *frontendServer) viewCartHandler(w http.ResponseWriter, r *http.Request
 			Quantity: item.GetQuantity(),
 			Price:    &multPrice}
 		totalPrice = money.Must(money.Sum(totalPrice, multPrice))
+
+		// Compute USD subtotal for free shipping threshold check
+		priceUSD := money.MultiplySlow(*p.GetPriceUsd(), uint32(item.GetQuantity()))
+		totalPriceUSD = money.Must(money.Sum(totalPriceUSD, priceUSD))
 	}
+
+	// Free shipping when item subtotal >= $50 USD
+	freeShipping := totalPriceUSD.GetUnits() >= 50
+	if freeShipping {
+		shippingCost = &pb.Money{CurrencyCode: currentCurrency(r), Units: 0, Nanos: 0}
+	}
+
 	totalPrice = money.Must(money.Sum(totalPrice, *shippingCost))
 	year := time.Now().Year()
 
@@ -305,6 +317,7 @@ func (fe *frontendServer) viewCartHandler(w http.ResponseWriter, r *http.Request
 		"recommendations":   recommendations,
 		"cart_size":         cartSize(cart),
 		"shipping_cost":     shippingCost,
+		"free_shipping":     freeShipping,
 		"show_currency":     true,
 		"total_cost":        totalPrice,
 		"items":             items,
@@ -367,6 +380,10 @@ func (fe *frontendServer) placeOrderHandler(w http.ResponseWriter, r *http.Reque
 		totalPaid = money.Must(money.Sum(totalPaid, multPrice))
 	}
 
+	// Determine if free shipping was applied (shipping cost is zero)
+	sc := order.GetOrder().GetShippingCost()
+	freeShipping := sc.GetUnits() == 0 && sc.GetNanos() == 0
+
 	currencies, err := fe.getCurrencies(r.Context())
 	if err != nil {
 		renderHTTPError(log, r, w, errors.Wrap(err, "could not retrieve currencies"), http.StatusInternalServerError)
@@ -381,6 +398,7 @@ func (fe *frontendServer) placeOrderHandler(w http.ResponseWriter, r *http.Reque
 		"currencies":        currencies,
 		"order":             order.GetOrder(),
 		"total_paid":        &totalPaid,
+		"free_shipping":     freeShipping,
 		"recommendations":   recommendations,
 		"platform_css":      plat.css,
 		"platform_name":     plat.provider,
@@ -496,10 +514,10 @@ func renderCurrencyLogo(currencyCode string) string {
 	logos := map[string]string{
 		"USD": "$",
 		"CAD": "$",
-		"JPY": "¥",
-		"EUR": "€",
-		"TRY": "₺",
-		"GBP": "£",
+		"JPY": "\u00a5",
+		"EUR": "\u20ac",
+		"TRY": "\u20ba",
+		"GBP": "\u00a3",
 	}
 
 	logo := "$" //default

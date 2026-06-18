@@ -53,6 +53,14 @@
                     {{.order.ShippingTrackingId}}
                 </div>
             </div>
+            <div class="row border-bottom-solid padding-y-24">
+                <div class="col-6 pl-md-0">
+                    Shipping
+                </div>
+                <div class="col-6 pr-md-0 text-right">
+                    {{ if $.free_shipping }}FREE{{ else }}{{renderMoney .order.ShippingCost}}{{ end }}
+                </div>
+            </div>
             <div class="row padding-y-24">
                 <div class="col-6 pl-md-0">
                     Total Paid

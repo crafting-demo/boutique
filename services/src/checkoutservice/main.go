@@ -296,6 +296,23 @@ func (cs *checkoutService) prepareOrderItemsAndShippingQuoteFromCart(ctx context
 	if err != nil {
 		return out, fmt.Errorf("shipping quote failure: %+v", err)
 	}
+
+	// Free shipping for orders with item subtotal >= $50 USD
+	subtotalUSD := pb.Money{CurrencyCode: usdCurrency, Units: 0, Nanos: 0}
+	for _, item := range orderItems {
+		itemCostUSD, err := cs.convertCurrency(ctx, item.Cost, usdCurrency)
+		if err != nil {
+			return out, fmt.Errorf("failed to convert item cost to USD: %+v", err)
+		}
+		multPrice := money.MultiplySlow(*itemCostUSD, uint32(item.GetItem().GetQuantity()))
+		subtotalUSD = money.Must(money.Sum(subtotalUSD, multPrice))
+	}
+	const freeShippingThresholdUnits int64 = 50
+	if subtotalUSD.GetUnits() >= freeShippingThresholdUnits {
+		log.Infof("order subtotal $%d.%02d meets free shipping threshold ($%d)", subtotalUSD.GetUnits(), subtotalUSD.GetNanos()/10000000, freeShippingThresholdUnits)
+		shippingUSD = &pb.Money{CurrencyCode: usdCurrency, Units: 0, Nanos: 0}
+	}
+
 	shippingPrice, err := cs.convertCurrency(ctx, shippingUSD, userCurrency)
 	if err != nil {
 		return out, fmt.Errorf("failed to convert shipping cost to currency: %+v", err)

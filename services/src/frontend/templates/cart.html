@@ -87,7 +87,7 @@
 
                     <div class="row cart-summary-shipping-row">
                         <div class="col pl-md-0">Shipping</div>
-                        <div class="col pr-md-0 text-right">{{ renderMoney .shipping_cost }}</div>
+                        <div class="col pr-md-0 text-right">{{ if $.free_shipping }}FREE{{ else }}{{ renderMoney .shipping_cost }}{{ end }}</div>
                     </div>
 
                     <div class="row cart-summary-total-row">
