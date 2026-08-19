@@ -43,6 +43,9 @@ import (
 const (
 	listenPort  = "5050"
 	usdCurrency = "USD"
+
+	// Orders with a subtotal >= this threshold (in USD) qualify for free shipping.
+	freeShippingThresholdUSD = 50
 )
 
 var log *logrus.Logger
@@ -296,6 +299,24 @@ func (cs *checkoutService) prepareOrderItemsAndShippingQuoteFromCart(ctx context
 	if err != nil {
 		return out, fmt.Errorf("shipping quote failure: %+v", err)
 	}
+
+	// Compute subtotal in USD for free shipping check
+	subtotalUSD := pb.Money{CurrencyCode: usdCurrency, Units: 0, Nanos: 0}
+	cl := pb.NewProductCatalogServiceClient(cs.productCatalogSvcConn)
+	for _, item := range cartItems {
+		product, err := cl.GetProduct(ctx, &pb.GetProductRequest{Id: item.GetProductId()})
+		if err != nil {
+			return out, fmt.Errorf("failed to get product #%q for shipping check", item.GetProductId())
+		}
+		multPrice := money.MultiplySlow(*product.GetPriceUsd(), uint32(item.GetQuantity()))
+		subtotalUSD = money.Must(money.Sum(subtotalUSD, multPrice))
+	}
+
+	// Zero out shipping for orders >= $50 USD
+	if subtotalUSD.GetUnits() >= freeShippingThresholdUSD {
+		shippingUSD = &pb.Money{CurrencyCode: usdCurrency, Units: 0, Nanos: 0}
+	}
+
 	shippingPrice, err := cs.convertCurrency(ctx, shippingUSD, userCurrency)
 	if err != nil {
 		return out, fmt.Errorf("failed to convert shipping cost to currency: %+v", err)

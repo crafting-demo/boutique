@@ -108,3 +108,12 @@
 .cart-checkout-form .cymbal-button-primary {
     margin-top: 36px;
 }
+
+/* Free shipping highlight */
+.cart-summary-free-shipping-label {
+    color: #1a873e;
+}
+
+.cart-summary-free-shipping-row {
+    margin-top: 4px;
+}

@@ -87,8 +87,34 @@
 
                     <div class="row cart-summary-shipping-row">
                         <div class="col pl-md-0">Shipping</div>
-                        <div class="col pr-md-0 text-right">{{ renderMoney .shipping_cost }}</div>
+                        <div class="col pr-md-0 text-right">
+                            {{ if $.free_shipping }}
+                                <strong class="cart-summary-free-shipping-label">FREE</strong>
+                            {{ else }}
+                                {{ renderMoney .shipping_cost }}
+                            {{ end }}
+                        </div>
                     </div>
+
+                    {{ if and (not $.free_shipping) $.remaining_for_free_shipping }}
+                    <div class="row cart-summary-free-shipping-row">
+                        <div class="col pl-md-0">
+                            <small class="cart-summary-free-shipping-label">
+                                Add {{ renderMoney $.remaining_for_free_shipping }} more to get free shipping!
+                            </small>
+                        </div>
+                    </div>
+                    {{ end }}
+
+                    {{ if $.free_shipping }}
+                    <div class="row cart-summary-free-shipping-row">
+                        <div class="col pl-md-0">
+                            <small class="cart-summary-free-shipping-label">
+                                &#10003; Your order qualifies for free shipping!
+                            </small>
+                        </div>
+                    </div>
+                    {{ end }}
 
                     <div class="row cart-summary-total-row">
                         <div class="col pl-md-0">Total</div>

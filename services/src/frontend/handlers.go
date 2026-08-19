@@ -275,6 +275,8 @@ func (fe *frontendServer) viewCartHandler(w http.ResponseWriter, r *http.Request
 	}
 	items := make([]cartItemView, len(cart))
 	totalPrice := pb.Money{CurrencyCode: currentCurrency(r)}
+	// Also compute subtotal in USD for free shipping check
+	subtotalUSD := pb.Money{CurrencyCode: "USD"}
 	for i, item := range cart {
 		p, err := fe.getProduct(r.Context(), item.GetProductId())
 		if err != nil {
@@ -293,26 +295,63 @@ func (fe *frontendServer) viewCartHandler(w http.ResponseWriter, r *http.Request
 			Quantity: item.GetQuantity(),
 			Price:    &multPrice}
 		totalPrice = money.Must(money.Sum(totalPrice, multPrice))
+
+		multPriceUSD := money.MultiplySlow(*p.GetPriceUsd(), uint32(item.GetQuantity()))
+		subtotalUSD = money.Must(money.Sum(subtotalUSD, multPriceUSD))
 	}
+
+	// Free shipping on orders with subtotal >= $50 USD
+	freeShipping := subtotalUSD.GetUnits() >= freeShippingThresholdUSD
+	if freeShipping {
+		shippingCost = &pb.Money{
+			CurrencyCode: currentCurrency(r),
+			Units:        0,
+			Nanos:        0,
+		}
+	}
+
+	// Calculate how much more (in USD) is needed for free shipping
+	var remainingForFreeShipping *pb.Money
+	if !freeShipping && len(cart) > 0 {
+		remaining := pb.Money{
+			CurrencyCode: "USD",
+			Units:        freeShippingThresholdUSD - subtotalUSD.GetUnits(),
+			Nanos:        -subtotalUSD.GetNanos(),
+		}
+		// Normalize nanos
+		if remaining.Nanos < 0 && remaining.Units > 0 {
+			remaining.Units--
+			remaining.Nanos += 1000000000
+		}
+		converted, err := fe.convertCurrency(r.Context(), &remaining, currentCurrency(r))
+		if err != nil {
+			log.WithField("error", err).Warn("failed to convert free shipping remainder")
+		} else {
+			remainingForFreeShipping = converted
+		}
+	}
+
 	totalPrice = money.Must(money.Sum(totalPrice, *shippingCost))
 	year := time.Now().Year()
 
 	if err := templates.ExecuteTemplate(w, "cart", map[string]interface{}{
-		"session_id":        sessionID(r),
-		"request_id":        r.Context().Value(ctxKeyRequestID{}),
-		"user_currency":     currentCurrency(r),
-		"currencies":        currencies,
-		"recommendations":   recommendations,
-		"cart_size":         cartSize(cart),
-		"shipping_cost":     shippingCost,
-		"show_currency":     true,
-		"total_cost":        totalPrice,
-		"items":             items,
-		"expiration_years":  []int{year, year + 1, year + 2, year + 3, year + 4},
-		"platform_css":      plat.css,
-		"platform_name":     plat.provider,
-		"is_cymbal_brand":   isCymbalBrand,
-		"deploymentDetails": deploymentDetailsMap,
+		"session_id":                 sessionID(r),
+		"request_id":                 r.Context().Value(ctxKeyRequestID{}),
+		"user_currency":              currentCurrency(r),
+		"currencies":                 currencies,
+		"recommendations":            recommendations,
+		"cart_size":                  cartSize(cart),
+		"shipping_cost":              shippingCost,
+		"show_currency":              true,
+		"total_cost":                 totalPrice,
+		"items":                      items,
+		"expiration_years":           []int{year, year + 1, year + 2, year + 3, year + 4},
+		"platform_css":               plat.css,
+		"platform_name":              plat.provider,
+		"is_cymbal_brand":            isCymbalBrand,
+		"deploymentDetails":          deploymentDetailsMap,
+		"free_shipping":              freeShipping,
+		"remaining_for_free_shipping": remainingForFreeShipping,
 	}); err != nil {
 		log.Println(err)
 	}

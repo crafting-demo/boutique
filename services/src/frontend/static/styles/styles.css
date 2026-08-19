@@ -650,3 +650,9 @@ the rules below could be extracted.
   width: 10px;
   height: 5px;
 }
+
+/* Error page */
+.error-detail {
+  white-space: pre-wrap;
+  word-break: keep-all;
+}

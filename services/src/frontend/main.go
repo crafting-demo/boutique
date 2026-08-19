@@ -42,6 +42,9 @@ const (
 	cookiePrefix    = "shop_"
 	cookieSessionID = cookiePrefix + "session-id"
 	cookieCurrency  = cookiePrefix + "currency"
+
+	// Orders with a subtotal >= this threshold (in USD) qualify for free shipping.
+	freeShippingThresholdUSD = 50
 )
 
 var (
@@ -151,6 +154,7 @@ func main() {
 	r.HandleFunc("/_healthz", func(w http.ResponseWriter, _ *http.Request) { fmt.Fprint(w, "ok") })
 
 	var handler http.Handler = r
+	handler = securityHeaders(handler)                 // add security headers
 	handler = &logHandler{log: log, next: handler}     // add logging
 	handler = ensureSessionID(handler)                 // add session ID
 	handler = otelhttp.NewHandler(handler, "frontend") // add OTel tracing
