@@ -47,39 +47,26 @@ cs infra connect kubernetes demo
 
 ### Create a Template
 
-The [sample template](.sandbox/template.yaml) can be used (modify the value of `KUBERNETES_CLUSTER` to
+The [sample templates](.sandbox/templates) can be used (modify the value of `KUBERNETES_CLUSTER` to
 be the name used in the `cs infra connect kubernetes` command above):
 
 ```sh
-cs template create boutique .sandbox/template.yaml
+cs template create boutique-shared-ns .sandbox/templates/shared-ns.yaml
+cs template create boutique-sandbox-ns .sandbox/templates/sandbox-ns.yaml
 ```
 
 ### Create a Sandbox
 
-The created Template can be used to create a sandbox and when the new sandbox launches, a new deployment
-will be created in a dedicated namespace (named as `APP_NS` defined in the template).
-And it can be directly accessed using the `shop` endpoint.
+Create a sandbox from a template to start development.
 
-### Further Improvement
+#### Use Shared Deployment
 
-When launching Web IDE (or connect via VSCode), there's no extension installed.
-The IDE may prompt for installing the [recommended extensions](.vscode/extensions.json), and after installing
-the Golang extension, additional Go tools must also be installed.
+When template `shared-ns.yaml` is used, it's targeting a shared deployment which must exist ahead of time.
+Start Kubernetes Interception with the pre-defined _checkout_ plan with conditional interception.
 
-To make the sandbox ready for use right after launch, the extensions and additional Go tools can be baked in
-a home snapshot. From a running sandbox:
+#### Use per-sandbox Namespace
 
-```sh
-.sandbox/snapshot/home.sh
-cs snapshot create --home home-boutique-v1
-```
-
-Then update the template by adding:
-
-```yaml
-home_snapshot: home-boutique-v1
-```
-
-to the workspace.
-
-Create another sandbox from the updated sandbox, and launch Web IDE. Now everything should be ready.
+When template `sandbox-ns.yaml` is used, a deployment in the per-sandbox namespace will be applied during sandbox creation
+and removed when sandbox is deleted.
+All deployments are scaled to zero during sandbox suspension and restored when sandbox is resumed.
+Checkout the `resources` definition for how automation is carried out.

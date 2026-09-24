@@ -1,0 +1,121 @@
+# The Template for creating the boutique dev sandbox for demo purpose.
+# This template assume a Kubernetes cluster has been connected to the Crafting system
+# and a shared version of boutique has been already deployed in the `boutique` namespace.
+# Create the template using:
+#  cs template create boutique templates/shared-ns.yaml
+#
+# With a Kubernetes cluster connected to the Crafting system, the sandbox is able to
+# access the API server directly. The file `~/.kube/config` will be generated automatically.
+env:
+- KUBERNETES_CLUSTER=demo
+- APP_NS=boutique
+endpoints:
+- name: shop
+  http:
+    routes:
+    - path_prefix: /
+      backend:
+        target: app
+        port: lb
+workspaces:
+- name: app
+  ports:
+  - name: checkout
+    port: 5050
+    protocol: HTTP/TCP
+  - name: frontend
+    port: 8080
+    protocol: HTTP/TCP
+  - name: lb
+    port: 8000
+    protocol: HTTP/TCP
+  checkouts:
+  - path: boutique
+    repo:
+      git: https://github.com/crafting-demo/boutique
+    manifest:
+      overlays:
+      - inline:
+          hooks:
+            post-checkout:
+              cmd: |
+                # Generate ~/.kube/config if not present.
+                [[ -f "~/.kube/config" ]] || {
+                  mkdir -p ~/.kube
+                  cat <<EOF >~/.kube/config
+                apiVersion: v1
+                clusters:
+                - cluster:
+                    server: http://${KUBERNETES_CLUSTER}.k8s.g.sandbox
+                  name: dev
+                contexts:
+                - context:
+                    cluster: dev
+                    namespace: ${APP_NS}
+                  name: dev
+                current-context: dev
+                EOF
+                }
+          daemons:
+            forward:
+              # Forward from the sandbox endpoint (shop) to the frontend service
+              # in the cluster, so the deployment can be visited from the
+              # sandbox endpoint.
+              run:
+                cmd: cs k8s forward -I ${KUBERNETES_CLUSTER} 8000:frontend.${APP_NS}:80
+  env:
+  - PRODUCT_CATALOG_SERVICE_ADDR=productcatalogservice.${APP_NS}:3550
+  - CURRENCY_SERVICE_ADDR=currencyservice.${APP_NS}:7000
+  - CART_SERVICE_ADDR=cartservice.${APP_NS}:7070
+  - RECOMMENDATION_SERVICE_ADDR=recommendationservice.${APP_NS}:8080
+  - SHIPPING_SERVICE_ADDR=shippingservice.${APP_NS}:50051
+  - CHECKOUT_SERVICE_ADDR=checkoutservice.${APP_NS}:5050
+  - PAYMENT_SERVICE_ADDR=paymentservice.${APP_NS}:50051
+  - EMAIL_SERVICE_ADDR=emailservice.${APP_NS}:5000
+  - AD_SERVICE_ADDR=adservice.${APP_NS}:9555
+  - REDIS_ADDR=redis-cart.${APP_NS}:6379
+  - DISABLE_PROFILER=1
+  probes:
+    readiness:
+    - name: frontend
+      http_get:
+        port: 8000
+        path: /
+
+  # DEPRECATED: tools should be included in the base snapshot.
+  # packages:
+  # - name: golang
+  #   version: ~1.19
+  # - name: nodejs
+  #   version: ~16
+  # - name: openjdk
+  #   version: ~14
+
+  # This should be the default most of the case. If not, explicitly specify the base_snapshot.
+  # base_snapshot: oci://ghcr.io/crafting-dev/sandbox/shared/workspace:latest
+
+overview: |-
+  # Boutique Online Shop
+  The microservices demo (from Google Cloud Platform).
+
+  ## Services
+
+  ![Architecture](https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/main/docs/img/architecture-diagram.png)
+customizations:
+  - kubernetes:
+      plan: checkout
+      workloads:
+        - namespace: $APP_NS
+          kind: Deployment
+          name: checkoutservice
+          workload: dev
+          port_forward:
+            - port: 5050
+              to: 5050
+      ingresses:
+        - namespace: $APP_NS
+          kind: Service
+          name: frontend
+          endpoint_name: dev
+      intercept_condition: {}
+      namespace: $APP_NS
