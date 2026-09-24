@@ -26,15 +26,6 @@ cluster (without modifying any resources in the cluster), so the developer is ab
 to develop and debugging the code from the workspace with everything else integrated
 with a live deployment in the cluster.
 
-## Images
-
-[release/kubernetes.yaml](release/kubernetes.yaml) runs the upstream v0.6.0 images, except
-`cartservice`. Upstream only publishes amd64 images, and the .NET cartservice crashes under
-emulation on Apple Silicon, so this repo publishes a multi-arch (amd64 and arm64) build of the
-same source to `ghcr.io/crafting-demo/boutique/cartservice` from
-[release/cartservice.Dockerfile](release/cartservice.Dockerfile), using the
-[cartservice image](.github/workflows/cartservice-image.yaml) workflow.
-
 ## Setup
 
 ### Connect a Kubernetes Cluster

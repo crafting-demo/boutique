@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM node:19.7.0-alpine@sha256:51dd437f31812df71108b81385e2945071ec813d5815fa3403855669c8f3432b as base
+FROM node:19.7.0-alpine@sha256:d3a3d691797cef0b70e361788a2aeb9dd7925112996719628d4bcd4bd27009b0 as base
 
 FROM base as builder
 
@@ -45,5 +45,6 @@ FROM without-grpc-health-probe-bin
 
 # renovate: datasource=github-releases depName=grpc-ecosystem/grpc-health-probe
 ENV GRPC_HEALTH_PROBE_VERSION=v0.4.15
-RUN wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
+ARG TARGETARCH
+RUN wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-${TARGETARCH} && \
     chmod +x /bin/grpc_health_probe

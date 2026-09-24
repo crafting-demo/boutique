@@ -2,8 +2,9 @@
 #
 # The upstream images are amd64-only, and under emulation on Apple Silicon the
 # .NET runtime dies with SIGTRAP (exit 133) as soon as it serves a gRPC request,
-# which breaks the shop's home page. Every other Boutique service emulates
-# acceptably, so cartservice is the only one built here.
+# which breaks the shop's home page. The other services build from their own
+# Dockerfiles under services/src; this one replaces cartservice's because that
+# Alpine build cannot target arm64 (see below).
 #
 # The SDK stage runs on the build platform and cross-publishes for the target,
 # so .NET never runs under emulation during the build either.
@@ -39,7 +40,7 @@ ARG TARGETARCH
 WORKDIR /app
 COPY --from=builder /cartservice .
 
-# grpc_health_probe backs the readiness/liveness probes in release/kubernetes.yaml.
+# Kept for parity with the upstream image, for gRPC health probes.
 ENV GRPC_HEALTH_PROBE_VERSION=v0.4.15
 ADD https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-${TARGETARCH} /bin/grpc_health_probe
 RUN chmod +x /bin/grpc_health_probe

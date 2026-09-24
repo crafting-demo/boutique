@@ -441,8 +441,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        # Multi-arch build of the same release; see release/cartservice.Dockerfile.
-        image: ghcr.io/crafting-demo/boutique/cartservice:v0.6.0
+        image: gcr.io/google-samples/microservices-demo/cartservice:v0.6.0
         ports:
         - containerPort: 7070
         env:
