@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM eclipse-temurin:19@sha256:9b0ae96f84fc58a2db048671f381d110195fb150c83eebb200ae39eb47fe6e62 as builder
+# The build output is platform-independent jars, so the builder runs on the
+# build platform and arm64 images build without emulation.
+FROM --platform=$BUILDPLATFORM eclipse-temurin:19@sha256:9b0ae96f84fc58a2db048671f381d110195fb150c83eebb200ae39eb47fe6e62 as builder
 
 WORKDIR /app
 
@@ -25,15 +27,9 @@ COPY . .
 RUN chmod +x gradlew
 RUN ./gradlew installDist
 
-FROM eclipse-temurin:19.0.1_10-jre-alpine@sha256:a75ea64f676041562cd7d3a54a9764bbfb357b2bf1bebf46e2af73e62d32e36c as without-grpc-health-probe-bin
-
-RUN apk add --no-cache ca-certificates
-
-# Download Stackdriver Profiler Java agent
-RUN mkdir -p /opt/cprof && \
-    wget -q -O- https://storage.googleapis.com/cloud-profiler/java/latest/profiler_java_agent_alpine.tar.gz \
-    | tar xzv -C /opt/cprof && \
-    rm -rf profiler_java_agent.tar.gz
+# The Alpine JRE and the Cloud Profiler agent are amd64-only, so this uses the
+# Ubuntu JRE and runs without the profiler.
+FROM eclipse-temurin:19.0.1_10-jre@sha256:a7d3887586126d377932cfd4bdd73ae96f152c14a746fc1c623459f62f8377e5 as without-grpc-health-probe-bin
 
 WORKDIR /app
 COPY --from=builder /app .
@@ -45,5 +41,6 @@ FROM without-grpc-health-probe-bin
 
 # renovate: datasource=github-releases depName=grpc-ecosystem/grpc-health-probe
 ENV GRPC_HEALTH_PROBE_VERSION=v0.4.15
-RUN wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
-    chmod +x /bin/grpc_health_probe
+ARG TARGETARCH
+ADD https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-${TARGETARCH} /bin/grpc_health_probe
+RUN chmod +x /bin/grpc_health_probe
