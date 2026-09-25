@@ -26,6 +26,19 @@ cluster (without modifying any resources in the cluster), so the developer is ab
 to develop and debugging the code from the workspace with everything else integrated
 with a live deployment in the cluster.
 
+## Images
+
+[release/kubernetes.yaml](release/kubernetes.yaml) runs images this repo builds from the
+vendored v0.6.0 source and publishes to `ghcr.io/crafting-demo/boutique/<service>` with the
+[images](.github/workflows/images.yaml) workflow. Upstream only publishes amd64 images to
+gcr.io, and the .NET cartservice crashes under emulation on Apple Silicon, so these are built
+for both amd64 and arm64. Each service builds from its Dockerfile under `services/src`, except
+cartservice, which uses [release/cartservice.Dockerfile](release/cartservice.Dockerfile).
+adservice runs without the Cloud Profiler agent, which has no arm64 build.
+
+The first publish of each image creates a private package. Make each one public in the
+organization's package settings, or clusters cannot pull it.
+
 ## Setup
 
 ### Connect a Kubernetes Cluster

@@ -47,7 +47,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: gcr.io/google-samples/microservices-demo/emailservice:v0.6.0
+        image: ghcr.io/crafting-demo/boutique/emailservice:v0.6.0
         ports:
         - containerPort: 8080
         env:
@@ -104,7 +104,7 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-          image: gcr.io/google-samples/microservices-demo/checkoutservice:v0.6.0
+          image: ghcr.io/crafting-demo/boutique/checkoutservice:v0.6.0
           ports:
           - containerPort: 5050
           env:
@@ -172,7 +172,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: gcr.io/google-samples/microservices-demo/recommendationservice:v0.6.0
+        image: ghcr.io/crafting-demo/boutique/recommendationservice:v0.6.0
         ports:
         - containerPort: 8080
         env:
@@ -233,7 +233,7 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-          image: gcr.io/google-samples/microservices-demo/frontend:v0.6.0
+          image: ghcr.io/crafting-demo/boutique/frontend:v0.6.0
           ports:
           - containerPort: 8080
           env:
@@ -325,7 +325,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: gcr.io/google-samples/microservices-demo/paymentservice:v0.6.0
+        image: ghcr.io/crafting-demo/boutique/paymentservice:v0.6.0
         ports:
         - containerPort: 50051
         env:
@@ -383,7 +383,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: gcr.io/google-samples/microservices-demo/productcatalogservice:v0.6.0
+        image: ghcr.io/crafting-demo/boutique/productcatalogservice:v0.6.0
         ports:
         - containerPort: 3550
         env:
@@ -441,7 +441,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: gcr.io/google-samples/microservices-demo/cartservice:v0.6.0
+        image: ghcr.io/crafting-demo/boutique/cartservice:v0.6.0
         ports:
         - containerPort: 7070
         env:
@@ -497,7 +497,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: gcr.io/google-samples/microservices-demo/currencyservice:v0.6.0
+        image: ghcr.io/crafting-demo/boutique/currencyservice:v0.6.0
         ports:
         - name: grpc
           containerPort: 7000
@@ -555,7 +555,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: gcr.io/google-samples/microservices-demo/shippingservice:v0.6.0
+        image: ghcr.io/crafting-demo/boutique/shippingservice:v0.6.0
         ports:
         - containerPort: 50051
         env:
@@ -670,7 +670,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: gcr.io/google-samples/microservices-demo/adservice:v0.6.0
+        image: ghcr.io/crafting-demo/boutique/adservice:v0.6.0
         ports:
         - containerPort: 9555
         env:
